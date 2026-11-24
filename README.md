@@ -15,6 +15,7 @@ pip install -e '.[dev]'
 spectraseek demo --output data/synthetic.csv
 spectraseek evaluate data/synthetic.csv --budget 3 --windows 1 --output results/evaluation.json
 spectraseek recommend data/synthetic.csv --visited S01 --found AP01
+spectraseek study data/synthetic.csv --budgets 1 2 3 6 12 --windows 3
 pytest -q
 streamlit run dashboard.py
 ```
@@ -40,11 +41,11 @@ A sample is a session/site/target triple. Features: site and target aliases, the
 - Logistic regression and random forest are compared with a per-site, per-target historical detection frequency baseline. The report pools held-out predictions for accuracy, precision, recall, F1, ROC-AUC, Brier score, and confusion matrices.
 - Search comparisons: random (30 trials/session), historical binary coverage, empirical detection-frequency greedy, ML-probability greedy, and exhaustive hindsight oracle for manageable combinations. All use the same scan budget. Coverage denominator is the number of targets detectable at any registered site in the held-out session, not the full inventory. Empty denominators are undefined. The oracle is not deployable. Expected coverage uses an independence approximation.
 - The report records each window's split and site plan, the dataset fingerprint, feature and model settings, random seed, and dependency versions. The top-level plan is from the final window. Paired bootstrap intervals use 2,000 session resamples to estimate uncertainty in the mean coverage difference versus empirical greedy. Sessions with no detectable targets are excluded from this comparison. Intervals assume independent sessions and can be unstable for a small pilot.
-- The interactive recommendation re-trains on the complete supplied historical dataset and excludes already visited sites and already found targets. This interactive behavior is not the fixed-plan benchmark; adaptive policy evaluation remains future work.
+- The interactive recommendation re-trains on the complete supplied historical dataset and excludes already visited sites and already found targets. This interactive behavior is not the fixed-plan benchmark. The separate offline adaptive replay compares fixed and adaptive policies across budgets; see [the protocol](docs/ADAPTIVE_EVALUATION.md).
 - Synthetic data is generated from a stochastic distance model, with seed 42 by default. It is NOT real Wi-Fi evidence. No ML superiority is assumed; compare against the empirical baseline. Validate with authorized measured surveys and report whether any improvement holds across evaluation windows.
 
 ## Structure
 
 `src/spectraseek/` contains the scanner, PostgreSQL repository, dataset validation, simulation, ML, coverage planner, CLI and local API. `dashboard.py` is the Streamlit interface. `docs/` contains the initial requirements and design. `tests/` contains automated tests. `data/synthetic.csv` and `results/evaluation.json` are reproducible demonstration artifacts.
 
-The prototype uses Python and PostgreSQL. Live collection requires compatible Linux hardware. No license has been selected for this new project.
+The prototype uses Python and PostgreSQL. Live collection requires compatible Linux hardware. The repository is licensed under the MIT license; see [LICENSE](LICENSE).

@@ -31,6 +31,12 @@ def main(argv=None) -> int:
     evaluation.add_argument('--seed', type=int, default=42, help='Seed for random plans and bootstrap intervals')
     evaluation.add_argument('--output', default='results/evaluation.json')
 
+    sensitivity = sub.add_parser('study', help='Offline adaptive and fixed budget comparison')
+    sensitivity.add_argument('dataset')
+    sensitivity.add_argument('--budgets', type=int, nargs='+', required=True)
+    sensitivity.add_argument('--windows', type=int, default=1)
+    sensitivity.add_argument('--output', default='results/study.json')
+
     recommendation = sub.add_parser('recommend')
     recommendation.add_argument('dataset')
     recommendation.add_argument('--visited', nargs='*', default=[])
@@ -65,6 +71,14 @@ def main(argv=None) -> int:
             summary_fields = ('source', 'models', 'classification_baseline', 'strategies', 'coverage_vs_empirical')
             summary = {key: result[key] for key in summary_fields}
             print(json.dumps(summary, indent=2))
+            print(f'Saved {path}')
+        elif args.command == 'study':
+            from .adaptive import study
+
+            result = study(load_csv(args.dataset), args.budgets, windows=args.windows)
+            path = _output_path(args.output)
+            path.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n',
+                            encoding='utf-8', newline='\n')
             print(f'Saved {path}')
         elif args.command == 'recommend':
             result = recommend(load_csv(args.dataset), args.visited, args.found, args.strategy)

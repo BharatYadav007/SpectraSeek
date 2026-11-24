@@ -8,7 +8,7 @@ from spectraseek.dataset import simulate
 
 
 def test_adaptive_uses_only_revealed_outcomes():
-    p = [[.9, .8, .0], [.8, .7, .0], [.0, .0, .6]]
+    p = [[.9, .8, .0], [.8, .7, .0], [.0, .0, .15]]
     a = [[1, 1, 0], [1, 1, 0], [0, 0, 1]]
     b = [[1, 1, 0], [0, 0, 0], [0, 0, 0]]
     assert replay(p, a, 2) == ([0, 2], [2, 3])
@@ -40,3 +40,13 @@ def test_study_chronology_and_budget():
     json.dumps(report, allow_nan=False)
     with pytest.raises(ValueError):
         study(data, [5])
+
+def test_study_cli(tmp_path):
+    from spectraseek.cli import main
+    path = tmp_path / 'input.csv'
+    out = tmp_path / 'study.json'
+    simulate(sessions=8, sites=3, targets=4).to_csv(path, index=False)
+    assert main(['study', str(path), '--budgets', '1', '3', '--output', str(out)]) == 0
+    result = json.loads(out.read_text())
+    assert result['budgets'] == [1, 3]
+    assert result['source'] == 'synthetic'
