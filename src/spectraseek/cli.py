@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 
-from .dataset import load_csv, simulate
+from .dataset import load_csv
 from .experiment import RECOMMENDATION_STRATEGIES, evaluate, recommend
 
 
@@ -23,6 +23,7 @@ def main(argv=None) -> int:
     demo.add_argument('--output', default='data/synthetic.csv')
     demo.add_argument('--seed', type=int, default=42)
     demo.add_argument('--sessions', type=int, default=40)
+    demo.add_argument('--scenario', choices=['stationary', 'interference', 'drift'], default='stationary')
 
     evaluation = sub.add_parser('evaluate')
     evaluation.add_argument('dataset')
@@ -57,7 +58,9 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == 'demo':
-            data = simulate(args.seed, args.sessions)
+            from .scenarios import simulate_scenario
+
+            data = simulate_scenario(args.seed, args.sessions, scenario=args.scenario)
             path = _output_path(args.output)
             data.to_csv(path, index=False)
             print(f'Wrote {len(data)} SYNTHETIC records to {path}')
