@@ -5,6 +5,15 @@ import pandas as pd
 
 COLUMNS = ['session', 'site', 'target', 'x', 'y', 'detected', 'source']
 FEATURES = ['site', 'target', 'pair', 'x', 'y']
+TEXT_COLUMNS = ['session', 'site', 'target', 'source']
+
+
+def load_csv(file) -> pd.DataFrame:
+    """Read and validate survey CSV without interpreting identifiers as numbers or NA markers."""
+    data = pd.read_csv(
+        file, dtype=dict.fromkeys(TEXT_COLUMNS, str), keep_default_na=False,
+    )
+    return validate(data)
 
 
 def validate(data: pd.DataFrame) -> pd.DataFrame:
@@ -14,7 +23,7 @@ def validate(data: pd.DataFrame) -> pd.DataFrame:
     df = data[COLUMNS].copy()
     if df.empty or df.isna().any().any():
         raise ValueError('Dataset must be nonempty and contain no missing values')
-    for col in ['session', 'site', 'target', 'source']:
+    for col in TEXT_COLUMNS:
         df[col] = df[col].astype(str).str.strip()
         if (df[col] == '').any():
             raise ValueError(f'Empty {col}')

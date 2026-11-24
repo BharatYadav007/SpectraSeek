@@ -7,13 +7,13 @@ Network administrators and student researchers need to survey a known, authorize
 | ID | Requirement / acceptance criterion | Design / implementation | Test |
 |---|---|---|---|
 | FR-01 | Collect approved AP visibility at a selected site; malformed or failed scan must not be accepted | Collector adapter, CLI scan | scanner_parser, scan_failure_not_negative |
-| FR-02 | Persist one complete scan and its target outcomes atomically in PostgreSQL; reject duplicate site/session | SurveyRepository, composite keys | postgres_schema (DDL only; live integration pending) |
-| FR-03 | Validate complete datasets with explicit negatives and stable coordinates | dataset.validate | invalid_duplicate, missing_negative, invalid_label, inconsistent_coordinates |
+| FR-02 | Persist each scan atomically in PostgreSQL and reject duplicate or incompatible scans | SurveyRepository, composite keys, survey protocol fingerprint | postgres_schema, PostgreSQL integration tests |
+| FR-03 | Validate complete datasets with explicit negatives, stable coordinates, and preserved identifiers | dataset.validate, dataset.load_csv | Dataset validation and CSV round-trip regression tests |
 | FR-04 | Generate reproducible simulated survey data, marked synthetic | dataset.simulate | reproducible |
-| FR-05 | Train two ML models without test-label leakage, report classification metrics | experiment.evaluate | holdout, no_test_label_leakage |
+| FR-05 | Evaluate two ML models and an empirical baseline on chronological holdouts | experiment.evaluate | holdout, no_test_label_leakage, expanding window regression tests |
 | FR-06 | Compare search plans under identical site budgets | planning.greedy/oracle, experiment.evaluate | greedy, holdout |
 | FR-07 | Recommend a remaining site excluding found targets | experiment.recommend | next_site |
-| FR-08 | Expose evaluation via CLI, local API and dashboard | cli, api, dashboard | cli, api; manual dashboard pending |
+| FR-08 | Expose evaluation via CLI, local API and dashboard | cli, api, dashboard | CLI and API tests, Streamlit single-site and recommendation regression test |
 
 Nonfunctional: validated inputs, explicit failures, stable seeds, session isolation, local-only default binding, no stored unrelated BSSIDs, no embedded credentials, Python-only source, modular design and documented limitations. Prototype usability: CLI and local dashboard; no production latency or scale claims.
 
@@ -35,7 +35,7 @@ flowchart TD
     J --> K[CLI / dashboard / demo API]
 ```
 
-Data model: `scans(session, site, captured_at, x, y)` with composite PK `(session, site)`. `observations(session, site, target, detected, signal_quality)` has PK `(session, site, target)` and FK to scans; detection and signal constraints apply. The inventory lives in operator-controlled JSON. A database instance is for one stable deployment/configuration. Schema creation is included; migrations are a future task. No raw BSSID persistence.
+Data model: `scans(session, site, captured_at, x, y)` with composite PK `(session, site)`. `observations(session, site, target, detected, signal_quality)` has PK `(session, site, target)` and FK to scans; detection and signal constraints apply. The inventory lives in operator-controlled JSON. The singleton `survey_protocol` table stores a fingerprint of the normalized inventory, site coordinates and signal threshold. Its first write and the scan are atomic. Existing scans with no fingerprint remain exportable and cannot receive new scans. Raw BSSIDs stay in the operator's configuration.
 
 Class/module responsibilities: immutable `ScanResult` carries timestamp and signal quality map; `SurveyRepository` owns transactions and exports; pure dataset/planning functions validate and optimize; experiment owns training and evaluation; CLI/API/UI are presentation layers. This keeps hardware and persistence separate from research algorithms.
 
@@ -50,4 +50,4 @@ Next site: [visited] [found] [strategy] [Recommend]
 ```
 
 ## Limits and academic compliance
-The baseline contains synthetic data only. Collect authorized real surveys and retain evidence, report actual dataset records and measured results, document training/test split and hardware configuration, and prepare the final SRS/SDD and presentation. The guideline's Java implementation requirement is intentionally not met; instructor approval is needed. The design is not a production service; authentication, migration workflow, Windows adapter, adaptive policy evaluation and deployment hardening remain outstanding.
+The baseline contains synthetic data only. Collect authorized real surveys and retain evidence, report actual dataset records and measured results, document training/test split and hardware configuration, and prepare the final SRS/SDD and presentation. Python is the project language. The current scope is a local research prototype. Future work includes a Windows collector, adaptive policy evaluation, and deployment hardening.

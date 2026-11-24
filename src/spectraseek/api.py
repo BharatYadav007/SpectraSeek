@@ -10,9 +10,13 @@ def health():
     return {'status':'ok','name':'SpectraSeek'}
 
 @app.get('/demo/evaluation')
-def demo_evaluation(budget:int=Query(3,ge=1,le=12),seed:int=Query(42,ge=0,le=2**32-1)):
+def demo_evaluation(
+    budget: int = Query(3, ge=1, le=12),
+    seed: int = Query(42, ge=0, le=2**32-1),
+    windows: int = Query(1, ge=1, le=20),
+):
     try:
-        return evaluate(simulate(seed),budget,seed)
+        return evaluate(simulate(seed), budget, seed, windows=windows)
     except ValueError as e:
         raise HTTPException(status_code=422,detail=str(e)) from e
 

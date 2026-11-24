@@ -48,7 +48,7 @@
   "sites": 12,
   "targets": 18,
   "budget": 3,
-  "training_seconds": 1.015582538999979,
+  "training_seconds": 1.2340462000001935,
   "models": {
     "logistic": {
       "accuracy": 0.7305555555555555,
@@ -56,7 +56,7 @@
       "recall": 0.6856846473029046,
       "f1": 0.694327731092437,
       "roc_auc": 0.8036053789256026,
-      "brier": 0.1791867809920098,
+      "brier": 0.17918678099201185,
       "confusion_matrix": [
         [
           917,
@@ -83,6 +83,26 @@
         [
           296,
           668
+        ]
+      ]
+    }
+  },
+  "classification_baseline": {
+    "empirical_greedy": {
+      "accuracy": 0.7324074074074074,
+      "precision": 0.694949494949495,
+      "recall": 0.7136929460580913,
+      "f1": 0.7041965199590583,
+      "roc_auc": 0.8031933901386364,
+      "brier": 0.17958847736625516,
+      "confusion_matrix": [
+        [
+          894,
+          302
+        ],
+        [
+          276,
+          688
         ]
       ]
     }
@@ -119,6 +139,24 @@
       "mean_coverage_pct": 95.0
     }
   ],
+  "coverage_vs_empirical": {
+    "logistic": {
+      "sessions": 10,
+      "mean_delta_pp": 0.0,
+      "bootstrap_95_ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "random_forest": {
+      "sessions": 10,
+      "mean_delta_pp": 0.0,
+      "bootstrap_95_ci_pp": [
+        0.0,
+        0.0
+      ]
+    }
+  },
   "recommendations": {
     "historical_greedy": [
       "S01",
@@ -141,9 +179,80 @@
       "S05"
     ]
   },
+  "windows": [
+    {
+      "train_sessions": [
+        "00000",
+        "00001",
+        "00002",
+        "00003",
+        "00004",
+        "00005",
+        "00006",
+        "00007",
+        "00008",
+        "00009",
+        "00010",
+        "00011",
+        "00012",
+        "00013",
+        "00014",
+        "00015",
+        "00016",
+        "00017",
+        "00018",
+        "00019",
+        "00020",
+        "00021",
+        "00022",
+        "00023",
+        "00024",
+        "00025",
+        "00026",
+        "00027",
+        "00028",
+        "00029"
+      ],
+      "test_sessions": [
+        "00030",
+        "00031",
+        "00032",
+        "00033",
+        "00034",
+        "00035",
+        "00036",
+        "00037",
+        "00038",
+        "00039"
+      ],
+      "recommendations": {
+        "historical_greedy": [
+          "S01",
+          "S02",
+          "S03"
+        ],
+        "empirical_greedy": [
+          "S08",
+          "S07",
+          "S05"
+        ],
+        "logistic": [
+          "S08",
+          "S07",
+          "S05"
+        ],
+        "random_forest": [
+          "S08",
+          "S07",
+          "S05"
+        ]
+      }
+    }
+  ],
   "per_session": [
     {
       "session": "00030",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 14.0,
       "available": 18,
@@ -151,6 +260,7 @@
     },
     {
       "session": "00030",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 17.0,
       "available": 18,
@@ -158,6 +268,7 @@
     },
     {
       "session": "00030",
+      "window": 1,
       "strategy": "logistic",
       "found": 17.0,
       "available": 18,
@@ -165,6 +276,7 @@
     },
     {
       "session": "00030",
+      "window": 1,
       "strategy": "random_forest",
       "found": 17.0,
       "available": 18,
@@ -172,6 +284,7 @@
     },
     {
       "session": "00030",
+      "window": 1,
       "strategy": "random",
       "found": 14.233333333333333,
       "available": 18,
@@ -179,6 +292,7 @@
     },
     {
       "session": "00030",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -186,6 +300,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 15.0,
       "available": 18,
@@ -193,6 +308,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 17.0,
       "available": 18,
@@ -200,6 +316,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "logistic",
       "found": 17.0,
       "available": 18,
@@ -207,6 +324,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "random_forest",
       "found": 17.0,
       "available": 18,
@@ -214,6 +332,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "random",
       "found": 13.033333333333333,
       "available": 18,
@@ -221,6 +340,7 @@
     },
     {
       "session": "00031",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -228,6 +348,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 13.0,
       "available": 18,
@@ -235,6 +356,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 17.0,
       "available": 18,
@@ -242,6 +364,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "logistic",
       "found": 17.0,
       "available": 18,
@@ -249,6 +372,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "random_forest",
       "found": 17.0,
       "available": 18,
@@ -256,6 +380,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "random",
       "found": 13.433333333333334,
       "available": 18,
@@ -263,6 +388,7 @@
     },
     {
       "session": "00032",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -270,6 +396,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 12.0,
       "available": 17,
@@ -277,6 +404,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 17.0,
       "available": 17,
@@ -284,6 +412,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "logistic",
       "found": 17.0,
       "available": 17,
@@ -291,6 +420,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "random_forest",
       "found": 17.0,
       "available": 17,
@@ -298,6 +428,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "random",
       "found": 14.633333333333333,
       "available": 17,
@@ -305,6 +436,7 @@
     },
     {
       "session": "00033",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 17.0,
       "available": 17,
@@ -312,6 +444,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 16.0,
       "available": 18,
@@ -319,6 +452,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 15.0,
       "available": 18,
@@ -326,6 +460,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "logistic",
       "found": 15.0,
       "available": 18,
@@ -333,6 +468,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "random_forest",
       "found": 15.0,
       "available": 18,
@@ -340,6 +476,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "random",
       "found": 15.1,
       "available": 18,
@@ -347,6 +484,7 @@
     },
     {
       "session": "00034",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -354,6 +492,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 15.0,
       "available": 18,
@@ -361,6 +500,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 18.0,
       "available": 18,
@@ -368,6 +508,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "logistic",
       "found": 18.0,
       "available": 18,
@@ -375,6 +516,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "random_forest",
       "found": 18.0,
       "available": 18,
@@ -382,6 +524,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "random",
       "found": 16.233333333333334,
       "available": 18,
@@ -389,6 +532,7 @@
     },
     {
       "session": "00035",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -396,6 +540,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 13.0,
       "available": 18,
@@ -403,6 +548,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 16.0,
       "available": 18,
@@ -410,6 +556,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "logistic",
       "found": 16.0,
       "available": 18,
@@ -417,6 +564,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "random_forest",
       "found": 16.0,
       "available": 18,
@@ -424,6 +572,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "random",
       "found": 14.566666666666666,
       "available": 18,
@@ -431,6 +580,7 @@
     },
     {
       "session": "00036",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -438,6 +588,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 12.0,
       "available": 18,
@@ -445,6 +596,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 18.0,
       "available": 18,
@@ -452,6 +604,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "logistic",
       "found": 18.0,
       "available": 18,
@@ -459,6 +612,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "random_forest",
       "found": 18.0,
       "available": 18,
@@ -466,6 +620,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "random",
       "found": 13.533333333333333,
       "available": 18,
@@ -473,6 +628,7 @@
     },
     {
       "session": "00037",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -480,6 +636,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 14.0,
       "available": 18,
@@ -487,6 +644,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 17.0,
       "available": 18,
@@ -494,6 +652,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "logistic",
       "found": 17.0,
       "available": 18,
@@ -501,6 +660,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "random_forest",
       "found": 17.0,
       "available": 18,
@@ -508,6 +668,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "random",
       "found": 14.6,
       "available": 18,
@@ -515,6 +676,7 @@
     },
     {
       "session": "00038",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
@@ -522,6 +684,7 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "historical_greedy",
       "found": 16.0,
       "available": 18,
@@ -529,6 +692,7 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "empirical_greedy",
       "found": 18.0,
       "available": 18,
@@ -536,6 +700,7 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "logistic",
       "found": 18.0,
       "available": 18,
@@ -543,6 +708,7 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "random_forest",
       "found": 18.0,
       "available": 18,
@@ -550,6 +716,7 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "random",
       "found": 16.0,
       "available": 18,
@@ -557,10 +724,45 @@
     },
     {
       "session": "00039",
+      "window": 1,
       "strategy": "offline_oracle",
       "found": 18.0,
       "available": 18,
       "coverage_pct": 100.0
     }
-  ]
+  ],
+  "experiment": {
+    "dataset_sha256": "39def3e9d8abc7e2deb6419f4fe3416999de7f5996edae1f026da2148814fccd",
+    "seed": 42,
+    "features": [
+      "site",
+      "target",
+      "pair",
+      "x",
+      "y"
+    ],
+    "estimator_overrides": {
+      "logistic": {
+        "max_iter": 1000
+      },
+      "random_forest": {
+        "n_estimators": 100,
+        "min_samples_leaf": 5,
+        "random_state": 42,
+        "n_jobs": 1
+      }
+    },
+    "decision_threshold": 0.5,
+    "random_trials_per_session": 30,
+    "bootstrap_samples": 2000,
+    "environment": {
+      "python": "3.14.2",
+      "spectraseek": "0.1.0",
+      "numpy": "2.5.5",
+      "pandas": "3.1.1",
+      "scikit-learn": "1.9.1",
+      "scipy": "1.18.1",
+      "joblib": "1.6.0"
+    }
+  }
 }
