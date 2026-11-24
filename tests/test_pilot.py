@@ -68,3 +68,96 @@ def test_pilot_reports_normalized_timestamps_and_unmatched_records(tmp_path):
     }]
     assert [[row['session'] for row in scanner]
             for scanner in result['unmatched_observations']] == [['00001', '00000'], ['00001']]
+
+
+def write_matched_rounds(left, right, *, count=16, vary=True):
+    from datetime import datetime, timedelta, timezone
+
+    start = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    for path, site, backend, delay in (
+        (left, 'S01', 'networkmanager', 3), (right, 'S02', 'windows-wlan', 5),
+    ):
+        with path.open('w', newline='') as handle:
+            writer = csv.writer(handle)
+            writer.writerow(['session', 'timestamp', 'site', 'target', 'detected',
+                             'signal_quality', 'backend'])
+            for index in range(count):
+                scheduled = start + timedelta(minutes=index)
+                identifier = scheduled.strftime('pilot-%Y%m%dT%H%M%SZ')
+                captured = (scheduled + timedelta(seconds=delay)).isoformat()
+                detected = int(vary and index % 2 == 0)
+                outcomes = (1, detected) if site == 'S01' else (0, 1)
+                for alias, outcome in zip(('AP01', 'AP02'), outcomes):
+                    writer.writerow([identifier, captured, site, alias, outcome,
+                                     70 if outcome else '', backend])
+
+
+def test_scheduled_evaluation_reports_support_and_held_out_scores(tmp_path):
+    left, right = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_matched_rounds(left, right)
+    report = compare(left, right, verified_rounds=True)
+    evaluation = report['model_evaluation']
+    assert report['alignment_method'] == 'scheduled_round_and_timestamp'
+    assert report['matched_pairs'] == 16
+    assert evaluation['status'] == 'exploratory'
+    assert (evaluation['train_rounds'], evaluation['test_rounds']) == (12, 4)
+    assert evaluation['train_last_utc'] < evaluation['test_first_utc']
+    assert evaluation['support']['test']['positives'] == 10
+    assert set(evaluation['models']) == {'logistic', 'random_forest',
+                                         'empirical_pair_frequency', 'empirical_global_frequency'}
+    baseline = evaluation['models']['empirical_global_frequency']
+    assert baseline['accuracy'] == 10 / 16
+    assert baseline['roc_auc'] == 0.5
+    assert all(result['mean_coverage_pct'] == 100
+               for result in evaluation['coverage']['strategies'] if result['budget'] == 2)
+    assert compare(left, right)['model_evaluation']['coverage']['status'] == 'unsupported'
+
+
+def test_scheduled_alignment_does_not_pair_different_rounds(tmp_path):
+    left, right = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_matched_rounds(left, right)
+    lines = right.read_text().splitlines()
+    right.write_text('\n'.join(lines[:1] + lines[3:]) + '\n')
+    report = compare(left, right, max_gap_seconds=120)
+    assert report['matched_pairs'] == 15
+    assert report['unmatched_scans'] == [1, 0]
+    assert all(pair['left_session'] == pair['right_session'] for pair in report['pairs'])
+
+
+def test_repeated_pattern_is_not_scored(tmp_path):
+    left, right = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_matched_rounds(left, right, vary=False)
+    result = compare(left, right, verified_rounds=True)['model_evaluation']
+    assert result['support']['train']['distinct_round_patterns'] == 1
+    assert result['status'] == result['coverage']['status'] == 'unsupported'
+    assert 'models' not in result
+
+
+def test_pilot_purges_train_pairs_that_cross_holdout_boundary(tmp_path):
+    from datetime import timedelta
+
+    from spectraseek.pilot import match_times
+    from spectraseek.pilot_evaluation import evaluate_pairs
+
+    left, right = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_matched_rounds(left, right)
+    pairs = match_times(load_pilot(left), load_pilot(right), 5)
+    pairs[11][1]['timestamp'] = pairs[12][0]['timestamp'] + timedelta(seconds=1)
+    evaluation = evaluate_pairs(pairs)
+    assert evaluation['purged_rounds'] == 1
+    assert evaluation['train_rounds'] == 11
+    assert evaluation['train_last_utc'] < evaluation['test_first_utc']
+
+
+def test_train_only_empirical_site_plan(tmp_path):
+    left, right = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_matched_rounds(left, right)
+    original = compare(left, right, verified_rounds=True)['model_evaluation']
+    lines = left.read_text().splitlines()
+    for index in range(25, len(lines), 2):
+        lines[index] = lines[index].replace(',1,70,networkmanager', ',0,,networkmanager')
+    left.write_text('\n'.join(lines) + '\n')
+    altered = compare(left, right, verified_rounds=True)['model_evaluation']
+    assert original['support']['test'] != altered['support']['test']
+    for old, new in zip(original['coverage']['strategies'], altered['coverage']['strategies']):
+        assert old['sites'] == new['sites']

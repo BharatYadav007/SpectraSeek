@@ -38,14 +38,14 @@ BOOTSTRAP_SAMPLES = 2000
 DECISION_THRESHOLD = 0.5
 
 
-def _fit_models(train, train_features, names):
+def _fit_models(train, train_features, names, *, numeric_features=('x', 'y')):
     if train.detected.nunique() != 2:
         raise ValueError('Training data must include detection and nondetection outcomes')
     models = {}
     for name in names:
         prep = ColumnTransformer([
             ('categorical', OneHotEncoder(handle_unknown='ignore'), ['site', 'target', 'pair']),
-            ('numeric', StandardScaler(), ['x', 'y']),
+            ('numeric', StandardScaler(), list(numeric_features)),
         ])
         model = make_pipeline(prep, MODEL_TYPES[name](**MODEL_SETTINGS[name]))
         models[name] = model.fit(train_features, train.detected)

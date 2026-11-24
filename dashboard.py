@@ -70,6 +70,11 @@ def pilot_view():
     files = [st.sidebar.file_uploader(f'Scanner {position} pilot CSV', type='csv')
              for position in (1, 2)]
     tolerance = st.sidebar.number_input('Maximum alignment gap (seconds)', 0, 300, 30)
+    verified = st.sidebar.checkbox(
+        'Verified synchronized rounds',
+        help='Enable for pilot-collect CSVs after confirming the same approved AP inventory, '
+             'scan protocol and synchronized clocks on both machines.',
+    )
     if any(file is None for file in files):
         st.info('Upload two pilot CSVs to validate observations and compare scan timestamps.')
         return
@@ -77,7 +82,7 @@ def pilot_view():
         with st.spinner('Validating and aligning pilot scans…'):
             left, right = [read_pilot(io.StringIO(file.getvalue().decode('utf-8-sig')))
                            for file in files]
-            report = compare_snapshots(left, right, max_gap_seconds=tolerance)
+            report = compare_snapshots(left, right, max_gap_seconds=tolerance, verified_rounds=verified)
     except (ValueError, UnicodeError, OSError) as exc:
         st.error(str(exc))
         return
@@ -119,9 +124,24 @@ def pilot_view():
             if scans:
                 st.dataframe(scans, hide_index=True)
     with methods:
-        st.warning(report['model_evaluation']['reason'])
-        st.caption('Model scores, search coverage, scan efficiency and location recommendations '
-                   'require a verified multi-site survey. See docs/PILOT_ANALYSIS.md for the protocol.')
+        evaluation = report['model_evaluation']
+        st.caption(f"{evaluation['train_rounds']} training rounds · "
+                   f"{evaluation['test_rounds']} held-out rounds · "
+                   f"{evaluation['purged_rounds']} boundary rounds excluded")
+        st.dataframe(pd.DataFrame(evaluation['support']).T)
+        if evaluation['status'] == 'exploratory':
+            st.info('Exploratory scores for these scanners, sites and survey rounds.')
+            scores = pd.DataFrame(evaluation['models']).T.drop(columns='confusion_matrix')
+            st.dataframe(scores)
+            st.bar_chart(scores[['accuracy', 'precision', 'recall', 'f1', 'roc_auc']].astype(float))
+        else:
+            st.warning(evaluation['reason'])
+        coverage_report = evaluation['coverage']
+        if coverage_report['status'] == 'exploratory':
+            st.subheader('Held-out discovery coverage')
+            st.dataframe(coverage_report['strategies'], hide_index=True)
+        else:
+            st.caption(coverage_report['reason'])
         for limitation in report['limitations']:
             st.markdown(f'- {limitation}')
     download_report(report, 'pilot.local.json')

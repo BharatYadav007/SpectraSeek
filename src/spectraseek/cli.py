@@ -56,6 +56,16 @@ def main(argv=None) -> int:
     scan.add_argument('--interface')
     scan.add_argument('--authorized', action='store_true', required=True)
 
+    pilot = sub.add_parser('pilot-collect', help='Collect authorized scans on a shared UTC schedule')
+    pilot.add_argument('--config', required=True)
+    pilot.add_argument('--site', required=True)
+    pilot.add_argument('--start', required=True, help='Common future ISO-8601 timestamp with UTC offset')
+    pilot.add_argument('--rounds', type=int, default=24)
+    pilot.add_argument('--interval', type=int, default=60, help='Seconds between scheduled starts')
+    pilot.add_argument('--interface')
+    pilot.add_argument('--output', required=True)
+    pilot.add_argument('--authorized', action='store_true', required=True)
+
     args = parser.parse_args(argv)
     try:
         if args.command == 'demo':
@@ -87,6 +97,10 @@ def main(argv=None) -> int:
         elif args.command == 'recommend':
             result = recommend(load_csv(args.dataset), args.visited, args.found, args.strategy)
             print(json.dumps(result, indent=2))
+        elif args.command == 'pilot-collect':
+            from .pilot_collection import run
+
+            return run(args)
         elif args.command == 'interfaces':
             from .collector import interfaces
 

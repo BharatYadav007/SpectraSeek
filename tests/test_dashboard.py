@@ -23,14 +23,16 @@ def test_synthetic_dashboard_and_measured_empty_states():
         assert not app.metric
 
 
-@pytest.mark.parametrize('invalid_csv', [False, True])
-def test_measured_pilot_dashboard(tmp_path, invalid_csv):
-    from test_pilot import write_pilot
+@pytest.mark.parametrize('scenario', ['insufficient', 'invalid', 'supported'])
+def test_measured_pilot_dashboard(tmp_path, scenario):
+    from test_pilot import write_matched_rounds, write_pilot
 
     first, second = tmp_path / 'a.csv', tmp_path / 'b.csv'
     write_pilot(first, 'S01', [1, 50], 'networkmanager')
     write_pilot(second, 'S02', [0], 'windows-wlan')
-    if invalid_csv:
+    if scenario == 'supported':
+        write_matched_rounds(first, second)
+    if scenario == 'invalid':
         second.write_text('bad,columns\n')
     app = AppTest.from_string(
         f"""import runpy
@@ -48,12 +50,16 @@ with patch.object(streamlit.sidebar, 'radio', return_value='Measured pilot'), pa
         default_timeout=30,
     ).run()
     assert not app.exception
-    if invalid_csv:
+    if scenario == 'invalid':
         assert 'Unexpected pilot CSV columns' in app.error[0].value
         assert not app.metric
         return
     assert not app.error
+    if scenario == 'supported':
+        assert any('Exploratory scores' in entry.value for entry in app.info)
+        assert not app.warning
+        return
     assert {metric.label: metric.value for metric in app.metric} == {
         'S01 scans': '2', 'S02 scans': '1', 'Candidate pairs': '1', 'Unmatched scans': '1',
     }
-    assert any('shared target identity' in warning.value for warning in app.warning)
+    assert any('at least 4' in warning.value for warning in app.warning)

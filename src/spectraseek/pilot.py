@@ -10,8 +10,10 @@ import json
 from pathlib import Path
 from statistics import mean
 
-FIELDS = {'session', 'timestamp', 'site', 'target', 'detected',
-          'signal_quality', 'backend'}
+from .pilot_collection import CAPTURE_SECONDS, PILOT_FIELDS, ROUND_PREFIX, round_start
+from .pilot_evaluation import evaluate_pairs
+
+FIELDS = set(PILOT_FIELDS)
 
 
 def load_pilot(path):
@@ -101,17 +103,21 @@ def describe(snapshots):
             'last_timestamp': snapshots[-1]['timestamp'].isoformat()}
 
 
-def compare(left_path, right_path, *, max_gap_seconds=30):
+def compare(left_path, right_path, *, max_gap_seconds=30, verified_rounds=False):
     return compare_snapshots(load_pilot(left_path), load_pilot(right_path),
-                             max_gap_seconds=max_gap_seconds)
+                             max_gap_seconds=max_gap_seconds, verified_rounds=verified_rounds)
 
 
-def compare_snapshots(left, right, *, max_gap_seconds=30):
+def compare_snapshots(left, right, *, max_gap_seconds=30, verified_rounds=False):
     if left[0]['site'] == right[0]['site']:
         raise ValueError('Pilot files must represent distinct sites')
     if set(left[0]['targets']) != set(right[0]['targets']):
         raise ValueError('Pilot target aliases differ')
-    pairs = match_times(left, right, max_gap_seconds)
+    scheduled = any(scan['session'].startswith(ROUND_PREFIX) for scan in (*left, *right))
+    if scheduled or verified_rounds:
+        pairs = _scheduled_pairs(left, right, max_gap_seconds)
+    else:
+        pairs = match_times(left, right, max_gap_seconds)
     used_left = {a['session'] for a, _, _ in pairs}
     used_right = {b['session'] for _, b, _ in pairs}
     return {
@@ -122,13 +128,11 @@ def compare_snapshots(left, right, *, max_gap_seconds=30):
             'Scans were collected independently. Timestamp proximity cannot verify clock '
             'synchronization or confirm that aliases identify the same hotspot.',
             'Site and scanner effects may be confounded; signal quality is not calibrated.',
-            'No paired training dataset or controlled performance claim is produced.',
+            'Exploratory scores describe these sites, scanners and targets. Generalization is unverified.',
         ],
-        'model_evaluation': {
-            'status': 'unsupported',
-            'reason': 'A controlled chronological benchmark needs repeated verified site '
-                      'coverage, shared target identity and independent held-out survey blocks.',
-        },
+        'verified_rounds': verified_rounds,
+        'alignment_method': 'scheduled_round_and_timestamp' if scheduled else 'timestamp',
+        'model_evaluation': evaluate_pairs(pairs, verified_rounds=verified_rounds),
         'max_gap_seconds': max_gap_seconds,
         'scanners': [describe(left), describe(right)],
         'matched_pairs': len(pairs),
@@ -148,15 +152,37 @@ def compare_snapshots(left, right, *, max_gap_seconds=30):
     }
 
 
+def _scheduled_pairs(left, right, tolerance):
+    if not 0 <= tolerance <= 300:
+        raise ValueError('Timestamp tolerance must be between 0 and 300 seconds')
+    for scan in (*left, *right):
+        offset = (scan['timestamp'] - round_start(scan['session'])).total_seconds()
+        if not 0 <= offset <= CAPTURE_SECONDS:
+            raise ValueError('A scheduled scan timestamp is outside its collection window')
+    by_session = {scan['session']: scan for scan in right}
+    pairs = []
+    for scan in left:
+        other = by_session.get(scan['session'])
+        if other is None:
+            continue
+        gap = abs((scan['timestamp'] - other['timestamp']).total_seconds())
+        if gap <= tolerance:
+            pairs.append((scan, other, gap))
+    return pairs
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('left_csv')
     parser.add_argument('right_csv')
     parser.add_argument('--max-gap', type=float, default=30)
+    parser.add_argument('--verified-rounds', action='store_true',
+                        help='Both synchronized collectors used the same verified AP inventory and protocol')
     parser.add_argument('--output', default='results/pilot.local.json')
     args = parser.parse_args(argv)
     try:
-        report = compare(args.left_csv, args.right_csv, max_gap_seconds=args.max_gap)
+        report = compare(args.left_csv, args.right_csv, max_gap_seconds=args.max_gap,
+                         verified_rounds=args.verified_rounds)
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(report, indent=2, allow_nan=False) + '\n', encoding='utf-8')
