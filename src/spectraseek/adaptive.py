@@ -2,9 +2,10 @@
 from hashlib import sha256
 
 import numpy as np
+import pandas as pd
 
 from .dataset import features, validate
-from .experiment import EMPIRICAL, _session_windows, train_models
+from .experiment import EMPIRICAL, _metrics, _session_windows, train_models
 from .planning import greedy, oracle
 
 
@@ -44,6 +45,7 @@ def study(data, budgets=(1, 2, 3), *, windows=1, include_temporal=False):
     if not budgets or any(not isinstance(b, int) or not 1 <= b <= len(sites) for b in budgets):
         raise ValueError('Budgets must be integers between 1 and the site count')
     records = []
+    labels, predictions = [], {}
     splits = _session_windows(sessions, windows)
     for number, (train_ids, test_ids) in enumerate(splits, 1):
         train = df[df.session.isin(train_ids)]
@@ -62,6 +64,9 @@ def study(data, budgets=(1, 2, 3), *, windows=1, include_temporal=False):
         test = df[df.session.isin(test_ids)]
         for session, group in test.groupby('session', sort=True):
             actual = group.sort_values(['site', 'target']).detected.to_numpy().reshape(shape)
+            labels.append(actual.ravel())
+            for name, estimates in probabilities.items():
+                predictions.setdefault(name, []).append(estimates.ravel())
             available = int(actual.any(axis=0).sum())
             for budget in budgets:
                 upper = oracle(actual, budget)
@@ -91,7 +96,10 @@ def study(data, budgets=(1, 2, 3), *, windows=1, include_temporal=False):
                 'adaptive_mean_found': float(np.mean([r['found'] for r in adaptive])),
                 'adaptive_delta_pp': float(np.mean(deltas)) if deltas else None,
             })
+    held_out = pd.Series(np.concatenate(labels))
     return {
+        'classification': {name: _metrics(held_out, np.concatenate(chunks))
+                           for name, chunks in predictions.items()},
         'source': str(df.source.iloc[0]),
         'dataset_sha256': sha256(df.to_csv(index=False, lineterminator='\n').encode()).hexdigest(),
         'windows': [{'train_sessions': a, 'test_sessions': b} for a, b in splits],

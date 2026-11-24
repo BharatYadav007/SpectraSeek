@@ -50,3 +50,17 @@ def test_study_cli(tmp_path):
     result = json.loads(out.read_text())
     assert result['budgets'] == [1, 3]
     assert result['source'] == 'synthetic'
+
+
+def test_study_classification_counts_each_held_out_observation_once():
+    data = simulate(sessions=12, sites=4, targets=5)
+    report = study(data, [1, 2, 4], windows=2, include_temporal=True)
+    assert set(report['classification']) == {
+        'empirical_greedy', 'logistic', 'random_forest', 'recent_frequency', 'temporal_logistic',
+    }
+    test_ids = [session for window in report['windows'] for session in window['test_sessions']]
+    held_out = data[data.session.isin(test_ids)].detected
+    for metrics in report['classification'].values():
+        matrix = np.asarray(metrics['confusion_matrix'])
+        assert matrix.sum() == len(held_out)
+        assert matrix[1].sum() == held_out.sum()

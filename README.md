@@ -64,3 +64,9 @@ A sample is a session/site/target triple. Features: site and target aliases, the
 `src/spectraseek/` contains the scanner, PostgreSQL repository, dataset validation, simulation, ML, coverage planner, CLI and local API. `dashboard.py` is the Streamlit interface. `docs/` contains the initial requirements and design. `tests/` contains automated tests. `data/synthetic.csv` and `results/evaluation.json` are reproducible demonstration artifacts.
 
 The prototype uses Python and PostgreSQL. Live collection requires a compatible adapter visible to the operating system running SpectraSeek. WSL needs a Linux-visible Wi-Fi device, such as a compatible USB adapter attached through [USB/IP](https://learn.microsoft.com/en-us/windows/wsl/connect-usb). The repository is licensed under the MIT license; see [LICENSE](LICENSE).
+
+## Dashboard datasets
+
+Choose **Synthetic** to generate a demonstration or upload a synthetic survey CSV. Choose **Measured survey** for a complete export from the verified PostgreSQL survey protocol. The dashboard shows held-out model scores, target detection heatmaps, location plans, budget curves, scan efficiency and fixed-versus-adaptive replay for these complete surveys. Evaluation and replay reports can be downloaded as JSON.
+
+Choose **Measured pilot** for two independent scanner CSVs. This view shows scanner-specific detection and signal quality, one-to-one timestamp alignment, unmatched scans and a downloadable diagnostic report. See [the pilot validation and collection protocol](docs/PILOT_ANALYSIS.md) for the data requirements for a measured benchmark.
