@@ -46,3 +46,25 @@ def test_pilot_rejects_incomplete_and_invalid_observations(tmp_path):
     path.write_text('\n'.join(lines).replace(',1,80,', ',1,101,') + '\n')
     with pytest.raises(ValueError, match='quality'):
         load_pilot(path)
+
+
+def test_pilot_reports_normalized_timestamps_and_unmatched_records(tmp_path):
+    from io import StringIO
+
+    from spectraseek.pilot import compare_snapshots, read_pilot
+
+    a, b = tmp_path / 'a.csv', tmp_path / 'b.csv'
+    write_pilot(a, 'S01', [40, 0, 20], 'networkmanager')
+    write_pilot(b, 'S02', [22, 44], 'windows-wlan')
+    text = a.read_text().replace('00:00:', '05:30:').replace('+00:00', '+05:30')
+    result = compare_snapshots(read_pilot(StringIO(text)), load_pilot(b), max_gap_seconds=2)
+    assert result['source'] == 'measured'
+    assert result['model_evaluation']['status'] == 'unsupported'
+    assert result['scanners'][1]['backend'] == 'windows-wlan'
+    assert result['pairs'] == [{
+        'left_session': '00002', 'right_session': '00000',
+        'left_timestamp': '2026-01-01T00:00:20+00:00',
+        'right_timestamp': '2026-01-01T00:00:22+00:00', 'gap_seconds': 2,
+    }]
+    assert [[row['session'] for row in scanner]
+            for scanner in result['unmatched_observations']] == [['00001', '00000'], ['00001']]

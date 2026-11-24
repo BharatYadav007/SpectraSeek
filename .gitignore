@@ -12,3 +12,12 @@ results/measured*.json
 # Private pilot observations and local reports
 /measured_*.csv
 /results/pilot.local.json
+
+# Local credentials and generated studies
+*.pat
+/results/study.json
+/results/*.local.json
+/measured-*.csv
+/data/measured-*.csv
+/measured-*.json
+/pilot.local.json

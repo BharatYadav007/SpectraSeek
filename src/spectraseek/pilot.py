@@ -16,38 +16,43 @@ FIELDS = {'session', 'timestamp', 'site', 'target', 'detected',
 
 def load_pilot(path):
     """Return a chronological list of complete observation snapshots."""
-    groups = {}
     with open(path, encoding='utf-8-sig', newline='') as handle:
-        reader = csv.DictReader(handle)
-        if len(reader.fieldnames or []) != len(FIELDS) or set(reader.fieldnames or []) != FIELDS:
-            raise ValueError('Unexpected pilot CSV columns')
-        for row in reader:
-            if None in row or any(v is None for v in row.values()):
-                raise ValueError('Malformed pilot CSV row')
-            session, site, target, backend = (
-                row[k].strip() for k in ('session', 'site', 'target', 'backend')
-            )
-            if not all((session, site, target, backend)):
-                raise ValueError('Empty pilot identifier')
-            stamp = datetime.fromisoformat(row['timestamp'])
-            if stamp.utcoffset() is None:
-                raise ValueError('Pilot timestamps must include a UTC offset')
-            stamp = stamp.astimezone(timezone.utc)
-            if row['detected'] not in ('0', '1'):
-                raise ValueError('Detection must be 0 or 1')
-            detected = int(row['detected'])
-            q = int(row['signal_quality']) if row['signal_quality'] else None
-            if (q is None) != (detected == 0) or (q is not None and not 0 <= q <= 100):
-                raise ValueError('Signal quality inconsistent with detection')
-            snapshot = groups.setdefault(session, {
-                'session': session, 'timestamp': stamp, 'site': site,
-                'backend': backend, 'targets': {},
-            })
-            if (snapshot['timestamp'], snapshot['site'], snapshot['backend']) != (stamp, site, backend):
-                raise ValueError('Inconsistent snapshot metadata')
-            if target in snapshot['targets']:
-                raise ValueError('Duplicate target observation')
-            snapshot['targets'][target] = q
+        return read_pilot(handle)
+
+
+def read_pilot(handle):
+    """Validate pilot observations from a text stream."""
+    groups = {}
+    reader = csv.DictReader(handle)
+    if len(reader.fieldnames or []) != len(FIELDS) or set(reader.fieldnames or []) != FIELDS:
+        raise ValueError('Unexpected pilot CSV columns')
+    for row in reader:
+        if None in row or any(v is None for v in row.values()):
+            raise ValueError('Malformed pilot CSV row')
+        session, site, target, backend = (
+            row[k].strip() for k in ('session', 'site', 'target', 'backend')
+        )
+        if not all((session, site, target, backend)):
+            raise ValueError('Empty pilot identifier')
+        stamp = datetime.fromisoformat(row['timestamp'])
+        if stamp.utcoffset() is None:
+            raise ValueError('Pilot timestamps must include a UTC offset')
+        stamp = stamp.astimezone(timezone.utc)
+        if row['detected'] not in ('0', '1'):
+            raise ValueError('Detection must be 0 or 1')
+        detected = int(row['detected'])
+        q = int(row['signal_quality']) if row['signal_quality'] else None
+        if (q is None) != (detected == 0) or (q is not None and not 0 <= q <= 100):
+            raise ValueError('Signal quality inconsistent with detection')
+        snapshot = groups.setdefault(session, {
+            'session': session, 'timestamp': stamp, 'site': site,
+            'backend': backend, 'targets': {},
+        })
+        if (snapshot['timestamp'], snapshot['site'], snapshot['backend']) != (stamp, site, backend):
+            raise ValueError('Inconsistent snapshot metadata')
+        if target in snapshot['targets']:
+            raise ValueError('Duplicate target observation')
+        snapshot['targets'][target] = q
     snapshots = sorted(groups.values(), key=lambda s: s['timestamp'])
     if not snapshots:
         raise ValueError('Empty pilot CSV')
@@ -91,32 +96,54 @@ def describe(snapshots):
             'mean_detected_quality': mean(seen) if seen else None,
         })
     return {'site': snapshots[0]['site'], 'backend': snapshots[0]['backend'],
-            'scans': len(snapshots), 'targets': result}
+            'scans': len(snapshots), 'targets': result,
+            'first_timestamp': snapshots[0]['timestamp'].isoformat(),
+            'last_timestamp': snapshots[-1]['timestamp'].isoformat()}
 
 
 def compare(left_path, right_path, *, max_gap_seconds=30):
-    left, right = load_pilot(left_path), load_pilot(right_path)
+    return compare_snapshots(load_pilot(left_path), load_pilot(right_path),
+                             max_gap_seconds=max_gap_seconds)
+
+
+def compare_snapshots(left, right, *, max_gap_seconds=30):
     if left[0]['site'] == right[0]['site']:
         raise ValueError('Pilot files must represent distinct sites')
     if set(left[0]['targets']) != set(right[0]['targets']):
         raise ValueError('Pilot target aliases differ')
     pairs = match_times(left, right, max_gap_seconds)
+    used_left = {a['session'] for a, _, _ in pairs}
+    used_right = {b['session'] for _, b, _ in pairs}
     return {
+        'source': 'measured',
         'analysis': 'exploratory_pilot_only',
         'limitations': [
-            'Matching timestamps does not verify clock synchronization or target identity.',
+            'Small sample sizes and repeated scans within one run limit generalization.',
+            'Scans were collected independently. Timestamp proximity cannot verify clock '
+            'synchronization or confirm that aliases identify the same hotspot.',
             'Site and scanner effects may be confounded; signal quality is not calibrated.',
             'No paired training dataset or controlled performance claim is produced.',
         ],
+        'model_evaluation': {
+            'status': 'unsupported',
+            'reason': 'A controlled chronological benchmark needs repeated verified site '
+                      'coverage, shared target identity and independent held-out survey blocks.',
+        },
         'max_gap_seconds': max_gap_seconds,
         'scanners': [describe(left), describe(right)],
         'matched_pairs': len(pairs),
         'unmatched_scans': [len(left) - len(pairs), len(right) - len(pairs)],
+        'unmatched_observations': [
+            [{'session': scan['session'], 'timestamp': scan['timestamp'].isoformat()}
+             for scan in snapshots if scan['session'] not in used]
+            for snapshots, used in ((left, used_left), (right, used_right))
+        ],
         'max_observed_gap_seconds': max((g for _, _, g in pairs), default=None),
         'mean_observed_gap_seconds': mean(g for _, _, g in pairs) if pairs else None,
         'pairs': [
             {'left_session': a['session'], 'right_session': b['session'],
-             'gap_seconds': g} for a, b, g in pairs
+             'left_timestamp': a['timestamp'].isoformat(),
+             'right_timestamp': b['timestamp'].isoformat(), 'gap_seconds': g} for a, b, g in pairs
         ],
     }
 
