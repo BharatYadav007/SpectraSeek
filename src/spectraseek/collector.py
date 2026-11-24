@@ -1,4 +1,4 @@
-"""Fresh NetworkManager adapter. No monitor mode, packet capture or association."""
+"""Collect fresh Wi-Fi signal quality through the operating system."""
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import os
@@ -13,7 +13,8 @@ _MAC = re.compile(r'(?:[0-9a-f]{2}:){5}[0-9a-f]{2}', re.I)
 @dataclass(frozen=True)
 class ScanResult:
     captured_at: datetime
-    signals: dict[str, int]  # NetworkManager signal quality, 0–100; not dBm.
+    signals: dict[str, int]  # OS signal quality, 0–100.
+    backend: str = 'networkmanager'
 
 
 def split_fields(line: str) -> list[str]:
@@ -53,7 +54,7 @@ def parse_scan(text: str) -> dict[str, int]:
 
 def _nmcli(*args: str) -> str:
     if not sys.platform.startswith('linux') or not shutil.which('nmcli'):
-        raise RuntimeError('Live collection requires Linux with NetworkManager and nmcli')
+        raise RuntimeError('Live collection requires Windows WLAN or Linux with NetworkManager and nmcli')
     result = subprocess.run(['nmcli', '--wait', '30', '--terse', '--escape', 'yes', *args],
                             capture_output=True, text=True, timeout=40,
                             env={**os.environ, 'LC_ALL': 'C'}, check=False)
@@ -62,13 +63,13 @@ def _nmcli(*args: str) -> str:
     return result.stdout
 
 
-def interfaces() -> list[str]:
+def _networkmanager_interfaces() -> list[str]:
     return [fields[0] for line in _nmcli('--fields', 'DEVICE,TYPE', 'device', 'status').splitlines()
             if len(fields := split_fields(line)) == 2 and fields[1] == 'wifi']
 
 
-def scan(interface: str | None = None) -> ScanResult:
-    available = interfaces()
+def _networkmanager_scan(interface: str | None) -> ScanResult:
+    available = _networkmanager_interfaces()
     if interface is None:
         if len(available) != 1:
             raise ValueError('Select a Wi-Fi interface explicitly')
@@ -78,3 +79,19 @@ def scan(interface: str | None = None) -> ScanResult:
     output = _nmcli('--fields', 'BSSID,SIGNAL', 'device', 'wifi', 'list',
                     'ifname', interface, '--rescan', 'yes')
     return ScanResult(datetime.now(timezone.utc), parse_scan(output))
+
+
+def interfaces() -> list[str]:
+    if sys.platform == 'win32':
+        from . import windows_wlan
+
+        return windows_wlan.interfaces()
+    return _networkmanager_interfaces()
+
+
+def scan(interface: str | None = None) -> ScanResult:
+    if sys.platform == 'win32':
+        from . import windows_wlan
+
+        return windows_wlan.scan(interface)
+    return _networkmanager_scan(interface)

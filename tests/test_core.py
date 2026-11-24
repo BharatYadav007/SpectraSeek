@@ -85,7 +85,7 @@ def test_next_site(data):
 
 def test_scan_failure_not_negative(monkeypatch):
     from spectraseek import collector
-    monkeypatch.setattr(collector,'interfaces',lambda:['wlan0'])
+    monkeypatch.setattr(collector, '_networkmanager_interfaces', lambda: ['wlan0'])
     def fail(*args): raise RuntimeError('scan unavailable')
     monkeypatch.setattr(collector,'_nmcli',fail)
-    with pytest.raises(RuntimeError): collector.scan('wlan0')
+    with pytest.raises(RuntimeError): collector._networkmanager_scan('wlan0')

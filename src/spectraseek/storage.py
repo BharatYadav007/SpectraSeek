@@ -1,5 +1,6 @@
 """Persist observations for one authorized survey protocol per PostgreSQL database."""
 
+from hashlib import sha256
 import os
 
 import pandas as pd
@@ -73,7 +74,7 @@ def _check_protocol(connection: Connection, fingerprint: str) -> None:
 
     stored = connection.execute(select(survey_protocol.c.fingerprint)).scalar_one()
     if stored != fingerprint:
-        raise ValueError('Survey configuration differs from existing scans. Use a fresh database for the new protocol.')
+        raise ValueError('Survey configuration differs from existing scans. Use a fresh database when changing the survey or collector.')
 
 
 class SurveyRepository:
@@ -105,8 +106,13 @@ class SurveyRepository:
                 'signal_quality': quality,
             })
 
+        fingerprint = config.fingerprint
+        if snapshot.backend != 'networkmanager':
+            # Keep the original fingerprint for databases created by the Linux collector.
+            fingerprint = sha256(f'{snapshot.backend}:{fingerprint}'.encode('utf-8')).hexdigest()
+
         with self.engine.begin() as connection:
-            _check_protocol(connection, config.fingerprint)
+            _check_protocol(connection, fingerprint)
             connection.execute(insert(scans).values(
                 session=session, site=site, x=x, y=y, captured_at=snapshot.captured_at,
             ))

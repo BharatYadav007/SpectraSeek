@@ -83,6 +83,9 @@ def test_scan_records_approved_outcomes_and_rejects_config_changes(repo, tmp_pat
     for changed in variants:
         with pytest.raises(ValueError, match='configuration differs'):
             repo.record('00002', 'S01', changed, snapshot)
+    windows_scan = ScanResult(snapshot.captured_at, snapshot.signals, backend='windows-wlan')
+    with pytest.raises(ValueError, match='configuration differs'):
+        repo.record('00002', 'S01', config, windows_scan)
 
     expected = [('00001', 'S01', 'AP1', 1), ('00001', 'S01', 'AP2', 0)]
     exported = repo.export()
@@ -103,7 +106,8 @@ def test_invalid_observation_rolls_back_scan_and_initial_protocol(repo, tmp_path
         for table in (survey_protocol, scans, observations):
             assert connection.execute(select(table)).first() is None
 
-    repo.record('00001', 'S01', load_config(path, min_quality=40), ScanResult(now, {FIRST: 70}))
+    windows_scan = ScanResult(now, {FIRST: 70}, backend='windows-wlan')
+    repo.record('00001', 'S01', load_config(path, min_quality=40), windows_scan)
     assert len(repo.export()) == 2
 
 

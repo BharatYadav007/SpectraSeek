@@ -1,5 +1,9 @@
-.......................                                                  [100%]
-23 passed, 1 warning in 5.89s
+Windows Python 3.14.2 with an isolated PostgreSQL database in Ubuntu WSL:
+26 passed, 1 warning in 6.39s
 
-Verified with Python 3.14.2 and an isolated PostgreSQL 16.15 instance.
-The warning came from the FastAPI test client and its HTTPX dependency.
+Ubuntu WSL Python 3.12.3 with PostgreSQL 16.15:
+26 passed, 1 warning in 6.16s
+
+The warning on both platforms came from the FastAPI test client and its HTTPX dependency.
+SpectraSeek completed one fresh Windows scan on the Realtek 8852BE-VT adapter and returned 76 unique access-point entries.
+Ubuntu WSL reported zero Wi-Fi devices through NetworkManager.

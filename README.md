@@ -6,12 +6,27 @@ A Python research prototype for authorized wireless site surveys. Given a fixed 
 
 ## Quick start
 
-Python 3.11+ (3.12 recommended). Linux is required only for live collection; the simulation, ML, and interface are cross-platform.
+Python 3.11+ (3.12 recommended). Live collection supports native Windows WLAN and Linux NetworkManager. The simulation, ML, and interfaces run on either platform.
+
+On Linux:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
-pip install -e '.[dev]'
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+```
+
+On Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e '.[dev]'
+```
+
+Run the demo on either platform:
+
+```bash
 spectraseek demo --output data/synthetic.csv
 spectraseek evaluate data/synthetic.csv --budget 3 --windows 1 --output results/evaluation.json
 spectraseek recommend data/synthetic.csv --visited S01 --found AP01
@@ -24,10 +39,10 @@ The local demonstration API is optional: `uvicorn spectraseek.api:app --host 127
 
 ## Live collection (authorized lab only)
 
-1. Install NetworkManager (`nmcli`) and use a supported Linux Wi-Fi adapter. `spectraseek interfaces` lists managed Wi-Fi devices. The adapter requests a fresh OS scan, and reports signal quality (0–100, not dBm). No monitor mode or special hardware is required.
-2. Copy `.env.example` to `.env` and choose a strong database password. Start PostgreSQL: `docker compose up -d --wait`. Set `DATABASE_URL` in your shell, e.g. `export DATABASE_URL='postgresql+psycopg://spectraseek:YOUR_URL_ENCODED_PASSWORD@localhost:5432/spectraseek'`. `.env` is used by Compose, not automatically read by the Python CLI.
-3. Run `spectraseek init-db` to initialize the schema. Copy `examples/survey.example.json` to `survey.local.json` and replace the placeholder BSSIDs with access points you own or are authorized to survey. Set local site coordinates in metres and use unique aliases. The first successful scan records a fingerprint of the inventory, site coordinates, and signal threshold. The database rejects scans with different settings. Start a fresh database for a new configuration. Only approved target outcomes are stored.
-4. At each registered site in a survey session, run e.g. `spectraseek scan --session 00001 --site S01 --config survey.local.json --interface wlan0 --authorized`. Repeat for all sites, then repeat the complete survey on different sessions. Use zero-padded, lexically chronological session IDs. A failed scan is an error, not a negative label. One scan per site per session; duplicate scans are rejected. The OS may use active discovery internally; no connection to APs is attempted.
+1. Run `spectraseek interfaces` to list supported adapters. On Linux, use a Wi-Fi adapter managed by NetworkManager (`nmcli`). On Windows, run the Windows Python installation in PowerShell and use a Native Wi-Fi adapter. If Windows denies a scan, check **Settings > Privacy & security > Location** and location access for desktop apps. Both collectors request fresh OS scans and report the driver's 0–100 signal quality.
+2. Copy `.env.example` to `.env` and choose a strong database password. Start PostgreSQL: `docker compose up -d --wait`. Set `DATABASE_URL` in your shell, e.g. `export DATABASE_URL='postgresql+psycopg://spectraseek:YOUR_URL_ENCODED_PASSWORD@localhost:5432/spectraseek'`. Use `$env:DATABASE_URL = 'postgresql+psycopg://...'` in Windows PowerShell. Compose loads `.env` for the database service. Set `DATABASE_URL` separately for SpectraSeek.
+3. Run `spectraseek init-db` to initialize the schema. Copy `examples/survey.example.json` to `survey.local.json` and replace the placeholder BSSIDs with access points you own or are authorized to survey. Set local site coordinates in metres and use unique aliases. The first successful scan records a fingerprint of the inventory, site coordinates, and signal threshold. The database rejects scans with different settings or a different collector. Use the same adapter throughout a survey and start a fresh database when switching between Windows and Linux. Only approved target outcomes are stored.
+4. At each registered site in a survey session, run `spectraseek scan --session 00001 --site S01 --config survey.local.json --authorized`. When more than one adapter is available, add `--interface` with the exact name shown by `spectraseek interfaces`. Quote a Windows adapter name containing spaces. Repeat for all sites, then repeat the complete survey on different sessions. Use zero-padded, lexically chronological session IDs. A failed scan is an error, not a negative label. One scan per site per session; duplicate scans are rejected. The OS may use active discovery internally; no connection to APs is attempted.
 5. `spectraseek export --output data/measured.csv`. Evaluate only complete survey sessions using `spectraseek evaluate data/measured.csv --windows 3 --output results/measured-evaluation.json`. Use one window for a four-session survey. Collect enough sessions for meaningful validation (at least four required, 20–40 recommended for a pilot). Keep measured data private.
 
 If a database already contains scans made before protocol tracking, export them separately and use a fresh database for new scans. Running `init-db` again creates the protocol table without altering existing measurements.
@@ -48,4 +63,4 @@ A sample is a session/site/target triple. Features: site and target aliases, the
 
 `src/spectraseek/` contains the scanner, PostgreSQL repository, dataset validation, simulation, ML, coverage planner, CLI and local API. `dashboard.py` is the Streamlit interface. `docs/` contains the initial requirements and design. `tests/` contains automated tests. `data/synthetic.csv` and `results/evaluation.json` are reproducible demonstration artifacts.
 
-The prototype uses Python and PostgreSQL. Live collection requires compatible Linux hardware. The repository is licensed under the MIT license; see [LICENSE](LICENSE).
+The prototype uses Python and PostgreSQL. Live collection requires a compatible adapter visible to the operating system running SpectraSeek. WSL needs a Linux-visible Wi-Fi device, such as a compatible USB adapter attached through [USB/IP](https://learn.microsoft.com/en-us/windows/wsl/connect-usb). The repository is licensed under the MIT license; see [LICENSE](LICENSE).

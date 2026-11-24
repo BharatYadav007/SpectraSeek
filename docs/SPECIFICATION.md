@@ -6,7 +6,7 @@ Network administrators and student researchers need to survey a known, authorize
 ## Requirements and traceability
 | ID | Requirement / acceptance criterion | Design / implementation | Test |
 |---|---|---|---|
-| FR-01 | Collect approved AP visibility at a selected site; malformed or failed scan must not be accepted | Collector adapter, CLI scan | scanner_parser, scan_failure_not_negative |
+| FR-01 | Collect approved AP visibility at a selected site; malformed or failed scan must not be accepted | NetworkManager or Windows WLAN collector, CLI scan | Linux scanner parser, Windows BSS parsing and scan timeout tests |
 | FR-02 | Persist each scan atomically in PostgreSQL and reject duplicate or incompatible scans | SurveyRepository, composite keys, survey protocol fingerprint | postgres_schema, PostgreSQL integration tests |
 | FR-03 | Validate complete datasets with explicit negatives, stable coordinates, and preserved identifiers | dataset.validate, dataset.load_csv | Dataset validation and CSV round-trip regression tests |
 | FR-04 | Generate reproducible simulated survey data, marked synthetic | dataset.simulate | reproducible |
@@ -22,7 +22,7 @@ Use case: operator registers authorized inventory and sites, collects full sessi
 ## Design
 ```mermaid
 flowchart TD
-    A[Authorized survey operator] --> B[Linux NetworkManager adapter]
+    A[Authorized survey operator] --> B[Linux NetworkManager or Windows WLAN adapter]
     B --> C[PostgreSQL repository]
     C --> D[Validated CSV]
     E[Synthetic generator] --> D
@@ -35,7 +35,7 @@ flowchart TD
     J --> K[CLI / dashboard / demo API]
 ```
 
-Data model: `scans(session, site, captured_at, x, y)` with composite PK `(session, site)`. `observations(session, site, target, detected, signal_quality)` has PK `(session, site, target)` and FK to scans; detection and signal constraints apply. The inventory lives in operator-controlled JSON. The singleton `survey_protocol` table stores a fingerprint of the normalized inventory, site coordinates and signal threshold. Its first write and the scan are atomic. Existing scans with no fingerprint remain exportable and cannot receive new scans. Raw BSSIDs stay in the operator's configuration.
+Data model: `scans(session, site, captured_at, x, y)` with composite PK `(session, site)`. `observations(session, site, target, detected, signal_quality)` has PK `(session, site, target)` and FK to scans; detection and signal constraints apply. The inventory lives in operator-controlled JSON. The singleton `survey_protocol` table stores a fingerprint of the normalized inventory, site coordinates, signal threshold, and collector. Its first write and the scan are atomic. Existing scans with no fingerprint remain exportable and cannot receive new scans. Raw BSSIDs stay in the operator's configuration.
 
 Class/module responsibilities: immutable `ScanResult` carries timestamp and signal quality map; `SurveyRepository` owns transactions and exports; pure dataset/planning functions validate and optimize; experiment owns training and evaluation; CLI/API/UI are presentation layers. This keeps hardware and persistence separate from research algorithms.
 
@@ -50,4 +50,4 @@ Next site: [visited] [found] [strategy] [Recommend]
 ```
 
 ## Limits and academic compliance
-The baseline contains synthetic data only. Collect authorized real surveys and retain evidence, report actual dataset records and measured results, document training/test split and hardware configuration, and prepare the final SRS/SDD and presentation. Python is the project language. The current scope is a local research prototype. Future work includes a Windows collector, adaptive policy evaluation, and deployment hardening.
+The baseline contains synthetic data only. Collect authorized real surveys and retain evidence, report actual dataset records and measured results, document training/test split and hardware configuration, and prepare the final SRS/SDD and presentation. Python is the project language. The current scope is a local research prototype. Future work includes adaptive policy evaluation and deployment hardening.
