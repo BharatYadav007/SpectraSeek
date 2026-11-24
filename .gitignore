@@ -8,3 +8,7 @@ __pycache__/
 survey.local.json
 data/measured*.csv
 results/measured*.json
+
+# Private pilot observations and local reports
+/measured_*.csv
+/results/pilot.local.json
