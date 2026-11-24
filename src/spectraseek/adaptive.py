@@ -34,7 +34,7 @@ def replay(probabilities, outcomes, budget, *, adaptive=True):
     return visited, cumulative
 
 
-def study(data, budgets=(1, 2, 3), *, windows=1):
+def study(data, budgets=(1, 2, 3), *, windows=1, include_temporal=False):
     """Train once per window; compare fixed and adaptive plans at each budget."""
     df = validate(data)
     sites = sorted(df.site.unique())
@@ -54,6 +54,11 @@ def study(data, budgets=(1, 2, 3), *, windows=1):
         }
         for name, model in train_models(train).items():
             probabilities[name] = model.predict_proba(features(pairs))[:, 1].reshape(shape)
+        if include_temporal:
+            from .temporal import forecast
+
+            history = train.sort_values(['session', 'site', 'target']).detected.to_numpy()
+            probabilities.update(forecast(history.reshape(len(train_ids), *shape)))
         test = df[df.session.isin(test_ids)]
         for session, group in test.groupby('session', sort=True):
             actual = group.sort_values(['site', 'target']).detected.to_numpy().reshape(shape)
@@ -90,5 +95,6 @@ def study(data, budgets=(1, 2, 3), *, windows=1):
         'source': str(df.source.iloc[0]),
         'dataset_sha256': sha256(df.to_csv(index=False, lineterminator='\n').encode()).hexdigest(),
         'windows': [{'train_sessions': a, 'test_sessions': b} for a, b in splits],
-        'budgets': budgets, 'summary': summary, 'per_session': records,
+        'budgets': budgets, 'include_temporal': include_temporal,
+        'summary': summary, 'per_session': records,
     }

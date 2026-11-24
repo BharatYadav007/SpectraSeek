@@ -36,6 +36,7 @@ def main(argv=None) -> int:
     sensitivity.add_argument('dataset')
     sensitivity.add_argument('--budgets', type=int, nargs='+', required=True)
     sensitivity.add_argument('--windows', type=int, default=1)
+    sensitivity.add_argument('--temporal', action='store_true', help='Include lagged-history experimental predictors')
     sensitivity.add_argument('--output', default='results/study.json')
 
     recommendation = sub.add_parser('recommend')
@@ -78,7 +79,7 @@ def main(argv=None) -> int:
         elif args.command == 'study':
             from .adaptive import study
 
-            result = study(load_csv(args.dataset), args.budgets, windows=args.windows)
+            result = study(load_csv(args.dataset), args.budgets, windows=args.windows, include_temporal=args.temporal)
             path = _output_path(args.output)
             path.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n',
                             encoding='utf-8', newline='\n')
