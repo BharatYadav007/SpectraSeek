@@ -1,0 +1,566 @@
+{
+  "source": "synthetic",
+  "rows": 8640,
+  "train_sessions": [
+    "00000",
+    "00001",
+    "00002",
+    "00003",
+    "00004",
+    "00005",
+    "00006",
+    "00007",
+    "00008",
+    "00009",
+    "00010",
+    "00011",
+    "00012",
+    "00013",
+    "00014",
+    "00015",
+    "00016",
+    "00017",
+    "00018",
+    "00019",
+    "00020",
+    "00021",
+    "00022",
+    "00023",
+    "00024",
+    "00025",
+    "00026",
+    "00027",
+    "00028",
+    "00029"
+  ],
+  "test_sessions": [
+    "00030",
+    "00031",
+    "00032",
+    "00033",
+    "00034",
+    "00035",
+    "00036",
+    "00037",
+    "00038",
+    "00039"
+  ],
+  "sites": 12,
+  "targets": 18,
+  "budget": 3,
+  "training_seconds": 1.015582538999979,
+  "models": {
+    "logistic": {
+      "accuracy": 0.7305555555555555,
+      "precision": 0.7031914893617022,
+      "recall": 0.6856846473029046,
+      "f1": 0.694327731092437,
+      "roc_auc": 0.8036053789256026,
+      "brier": 0.1791867809920098,
+      "confusion_matrix": [
+        [
+          917,
+          279
+        ],
+        [
+          303,
+          661
+        ]
+      ]
+    },
+    "random_forest": {
+      "accuracy": 0.737037037037037,
+      "precision": 0.7106382978723405,
+      "recall": 0.6929460580912863,
+      "f1": 0.7016806722689075,
+      "roc_auc": 0.8033972161700829,
+      "brier": 0.17960416865474185,
+      "confusion_matrix": [
+        [
+          924,
+          272
+        ],
+        [
+          296,
+          668
+        ]
+      ]
+    }
+  },
+  "strategies": [
+    {
+      "strategy": "empirical_greedy",
+      "mean_found": 17.0,
+      "mean_coverage_pct": 95.0
+    },
+    {
+      "strategy": "historical_greedy",
+      "mean_found": 14.0,
+      "mean_coverage_pct": 78.16993464052288
+    },
+    {
+      "strategy": "logistic",
+      "mean_found": 17.0,
+      "mean_coverage_pct": 95.0
+    },
+    {
+      "strategy": "offline_oracle",
+      "mean_found": 17.9,
+      "mean_coverage_pct": 100.0
+    },
+    {
+      "strategy": "random",
+      "mean_found": 14.536666666666667,
+      "mean_coverage_pct": 81.23747276688452
+    },
+    {
+      "strategy": "random_forest",
+      "mean_found": 17.0,
+      "mean_coverage_pct": 95.0
+    }
+  ],
+  "recommendations": {
+    "historical_greedy": [
+      "S01",
+      "S02",
+      "S03"
+    ],
+    "empirical_greedy": [
+      "S08",
+      "S07",
+      "S05"
+    ],
+    "logistic": [
+      "S08",
+      "S07",
+      "S05"
+    ],
+    "random_forest": [
+      "S08",
+      "S07",
+      "S05"
+    ]
+  },
+  "per_session": [
+    {
+      "session": "00030",
+      "strategy": "historical_greedy",
+      "found": 14.0,
+      "available": 18,
+      "coverage_pct": 77.77777777777777
+    },
+    {
+      "session": "00030",
+      "strategy": "empirical_greedy",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00030",
+      "strategy": "logistic",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00030",
+      "strategy": "random_forest",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00030",
+      "strategy": "random",
+      "found": 14.233333333333333,
+      "available": 18,
+      "coverage_pct": 79.07407407407408
+    },
+    {
+      "session": "00030",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00031",
+      "strategy": "historical_greedy",
+      "found": 15.0,
+      "available": 18,
+      "coverage_pct": 83.33333333333333
+    },
+    {
+      "session": "00031",
+      "strategy": "empirical_greedy",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00031",
+      "strategy": "logistic",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00031",
+      "strategy": "random_forest",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00031",
+      "strategy": "random",
+      "found": 13.033333333333333,
+      "available": 18,
+      "coverage_pct": 72.4074074074074
+    },
+    {
+      "session": "00031",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00032",
+      "strategy": "historical_greedy",
+      "found": 13.0,
+      "available": 18,
+      "coverage_pct": 72.22222222222223
+    },
+    {
+      "session": "00032",
+      "strategy": "empirical_greedy",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00032",
+      "strategy": "logistic",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00032",
+      "strategy": "random_forest",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00032",
+      "strategy": "random",
+      "found": 13.433333333333334,
+      "available": 18,
+      "coverage_pct": 74.62962962962962
+    },
+    {
+      "session": "00032",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00033",
+      "strategy": "historical_greedy",
+      "found": 12.0,
+      "available": 17,
+      "coverage_pct": 70.58823529411765
+    },
+    {
+      "session": "00033",
+      "strategy": "empirical_greedy",
+      "found": 17.0,
+      "available": 17,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00033",
+      "strategy": "logistic",
+      "found": 17.0,
+      "available": 17,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00033",
+      "strategy": "random_forest",
+      "found": 17.0,
+      "available": 17,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00033",
+      "strategy": "random",
+      "found": 14.633333333333333,
+      "available": 17,
+      "coverage_pct": 86.07843137254902
+    },
+    {
+      "session": "00033",
+      "strategy": "offline_oracle",
+      "found": 17.0,
+      "available": 17,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00034",
+      "strategy": "historical_greedy",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00034",
+      "strategy": "empirical_greedy",
+      "found": 15.0,
+      "available": 18,
+      "coverage_pct": 83.33333333333333
+    },
+    {
+      "session": "00034",
+      "strategy": "logistic",
+      "found": 15.0,
+      "available": 18,
+      "coverage_pct": 83.33333333333333
+    },
+    {
+      "session": "00034",
+      "strategy": "random_forest",
+      "found": 15.0,
+      "available": 18,
+      "coverage_pct": 83.33333333333333
+    },
+    {
+      "session": "00034",
+      "strategy": "random",
+      "found": 15.1,
+      "available": 18,
+      "coverage_pct": 83.88888888888889
+    },
+    {
+      "session": "00034",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00035",
+      "strategy": "historical_greedy",
+      "found": 15.0,
+      "available": 18,
+      "coverage_pct": 83.33333333333333
+    },
+    {
+      "session": "00035",
+      "strategy": "empirical_greedy",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00035",
+      "strategy": "logistic",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00035",
+      "strategy": "random_forest",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00035",
+      "strategy": "random",
+      "found": 16.233333333333334,
+      "available": 18,
+      "coverage_pct": 90.18518518518519
+    },
+    {
+      "session": "00035",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00036",
+      "strategy": "historical_greedy",
+      "found": 13.0,
+      "available": 18,
+      "coverage_pct": 72.22222222222223
+    },
+    {
+      "session": "00036",
+      "strategy": "empirical_greedy",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00036",
+      "strategy": "logistic",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00036",
+      "strategy": "random_forest",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00036",
+      "strategy": "random",
+      "found": 14.566666666666666,
+      "available": 18,
+      "coverage_pct": 80.92592592592592
+    },
+    {
+      "session": "00036",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00037",
+      "strategy": "historical_greedy",
+      "found": 12.0,
+      "available": 18,
+      "coverage_pct": 66.66666666666667
+    },
+    {
+      "session": "00037",
+      "strategy": "empirical_greedy",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00037",
+      "strategy": "logistic",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00037",
+      "strategy": "random_forest",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00037",
+      "strategy": "random",
+      "found": 13.533333333333333,
+      "available": 18,
+      "coverage_pct": 75.18518518518518
+    },
+    {
+      "session": "00037",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00038",
+      "strategy": "historical_greedy",
+      "found": 14.0,
+      "available": 18,
+      "coverage_pct": 77.77777777777777
+    },
+    {
+      "session": "00038",
+      "strategy": "empirical_greedy",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00038",
+      "strategy": "logistic",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00038",
+      "strategy": "random_forest",
+      "found": 17.0,
+      "available": 18,
+      "coverage_pct": 94.44444444444444
+    },
+    {
+      "session": "00038",
+      "strategy": "random",
+      "found": 14.6,
+      "available": 18,
+      "coverage_pct": 81.11111111111111
+    },
+    {
+      "session": "00038",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00039",
+      "strategy": "historical_greedy",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00039",
+      "strategy": "empirical_greedy",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00039",
+      "strategy": "logistic",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00039",
+      "strategy": "random_forest",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    },
+    {
+      "session": "00039",
+      "strategy": "random",
+      "found": 16.0,
+      "available": 18,
+      "coverage_pct": 88.88888888888889
+    },
+    {
+      "session": "00039",
+      "strategy": "offline_oracle",
+      "found": 18.0,
+      "available": 18,
+      "coverage_pct": 100.0
+    }
+  ]
+}

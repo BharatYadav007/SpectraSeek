@@ -1,0 +1,52 @@
+{
+  "site": "S08",
+  "expected_new_targets": 10.822386544033007,
+  "ranked_sites": [
+    {
+      "site": "S08",
+      "expected_new_targets": 10.822386544033007
+    },
+    {
+      "site": "S05",
+      "expected_new_targets": 8.96057420432118
+    },
+    {
+      "site": "S11",
+      "expected_new_targets": 8.404994394886188
+    },
+    {
+      "site": "S10",
+      "expected_new_targets": 8.40273543990828
+    },
+    {
+      "site": "S09",
+      "expected_new_targets": 8.166046498189022
+    },
+    {
+      "site": "S07",
+      "expected_new_targets": 8.151803043136649
+    },
+    {
+      "site": "S06",
+      "expected_new_targets": 7.514118278662828
+    },
+    {
+      "site": "S04",
+      "expected_new_targets": 7.4870635253278675
+    },
+    {
+      "site": "S02",
+      "expected_new_targets": 6.862974650951297
+    },
+    {
+      "site": "S12",
+      "expected_new_targets": 4.488927222925021
+    },
+    {
+      "site": "S03",
+      "expected_new_targets": 4.112754369005643
+    }
+  ],
+  "strategy": "random_forest",
+  "source": "synthetic"
+}
